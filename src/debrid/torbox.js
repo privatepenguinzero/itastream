@@ -121,10 +121,28 @@ async function controlTorrent(torrentId, operation) {
   return res.ok;
 }
 
-// URL statico — NIENTE fetch! Stremio segue il redirect direttamente.
-function buildDownloadUrl(torrentId, fileId) {
-  const token = encodeURIComponent(getConfig().torboxKey);
-  return `${BASE}/api/torrents/requestdl?token=${token}&torrent_id=${torrentId}&file_id=${fileId}&redirect=true`;
+// Chiama TB API server-side con redirect=false → estrae il CDN URL dal JSON.
+// Catena di redirect ridotta da 3 hop (Pezzottio → TB API → CDN) a 2 hop
+// (Pezzottio → CDN), evita "loading failed" di libmpv su catene HTTP/2 + 307.
+// Cache 5 min per evitare chiamate API duplicate sugli stessi (torrent, file).
+const cdnUrlCache = new Map(); // key = `${token}:${torrentId}:${fileId}` → { url, exp }
+const CDN_TTL_MS = 5 * 60 * 1000;
+async function buildDownloadUrl(torrentId, fileId) {
+  const token = getConfig().torboxKey;
+  const cacheKey = `${token}:${torrentId}:${fileId}`;
+  const cached = cdnUrlCache.get(cacheKey);
+  if (cached && cached.exp > Date.now()) return cached.url;
+  const apiUrl = `${BASE}/api/torrents/requestdl?token=${encodeURIComponent(token)}&torrent_id=${torrentId}&file_id=${fileId}&redirect=false`;
+  try {
+    const res = await fetch(apiUrl, { timeout: TIMEOUT });
+    if (!res.ok) return null;
+    const j = await res.json().catch(() => ({}));
+    const cdn = j && j.success && typeof j.data === 'string' ? j.data : null;
+    if (cdn) cdnUrlCache.set(cacheKey, { url: cdn, exp: Date.now() + CDN_TTL_MS });
+    return cdn;
+  } catch (_) {
+    return null;
+  }
 }
 
 // Sceglie il file giusto: se è specificato S/E (per i pack) cerca il file
