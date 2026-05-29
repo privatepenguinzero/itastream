@@ -363,6 +363,27 @@ function render({ base, rd, tb, order, aios, style, onlyTorrent, filter, fullIta
               <div class="text-[10px] text-zinc-500 pt-1">Paghi con carta, PayPal, Apple/Google Pay o crypto — quello che preferisci. Il buono arriva via email diretto a Pezzottio.</div>
             </div>
           </div>
+          <!-- Donazioni crypto dirette (minimal: solo label + indirizzo + copia) -->
+          <div class="mt-3 pt-3 border-t border-white/[0.06]">
+            <div class="text-[11px] font-medium text-zinc-200 mb-1.5">Oppure in crypto</div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold text-zinc-300 w-12 shrink-0">BTC</span>
+                <code class="mono text-[10px] bg-white/[0.04] border border-white/[0.08] rounded px-2 py-1 text-zinc-300 flex-1 min-w-0 truncate" title="bc1qcu9ch68gua0u4pgfqzlxshtdv99s06pwyhu4mm">bc1qcu9ch68gua0u4pgfqzlxshtdv99s06pwyhu4mm</code>
+                <button data-copy-addr="bc1qcu9ch68gua0u4pgfqzlxshtdv99s06pwyhu4mm" class="copy-addr-btn text-[10px] px-2 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:bg-white/[0.08] transition whitespace-nowrap shrink-0">Copia</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold text-zinc-300 w-12 shrink-0">ETH</span>
+                <code class="mono text-[10px] bg-white/[0.04] border border-white/[0.08] rounded px-2 py-1 text-zinc-300 flex-1 min-w-0 truncate" title="0x8915E5A201d66d55C91F9828c580931dB92fD82a">0x8915E5A201d66d55C91F9828c580931dB92fD82a</code>
+                <button data-copy-addr="0x8915E5A201d66d55C91F9828c580931dB92fD82a" class="copy-addr-btn text-[10px] px-2 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:bg-white/[0.08] transition whitespace-nowrap shrink-0">Copia</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold text-zinc-300 w-12 shrink-0">Solana</span>
+                <code class="mono text-[10px] bg-white/[0.04] border border-white/[0.08] rounded px-2 py-1 text-zinc-300 flex-1 min-w-0 truncate" title="9U21MvZGgGhXpjuTz9MNfYorTQEYhkfd1LtWfjA9ib7W">9U21MvZGgGhXpjuTz9MNfYorTQEYhkfd1LtWfjA9ib7W</code>
+                <button data-copy-addr="9U21MvZGgGhXpjuTz9MNfYorTQEYhkfd1LtWfjA9ib7W" class="copy-addr-btn text-[10px] px-2 py-1 rounded bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:bg-white/[0.08] transition whitespace-nowrap shrink-0">Copia</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">

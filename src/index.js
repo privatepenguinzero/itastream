@@ -721,8 +721,9 @@ async function pingHost(name, url, timeoutMs = 3500) {
     const id = setTimeout(() => controller.abort(), timeoutMs);
     const r = await fetch(url, { method: 'GET', signal: controller.signal, headers: { 'User-Agent': 'Pezzottio/status-probe' } });
     clearTimeout(id);
-    // 401/403/404/405 = server risponde (è "online"), non rifiuto dell'addon
-    const aliveStatuses = new Set([200, 301, 302, 401, 403, 404, 405]);
+    // 301/302/307/308 = redirect (server up); 401/403/404/405 = server risponde
+    // (è "online", non rifiuto dell'addon)
+    const aliveStatuses = new Set([200, 301, 302, 307, 308, 401, 403, 404, 405]);
     return { name, ok: aliveStatuses.has(r.status) || r.ok, status: r.status, ms: Date.now() - t0 };
   } catch (e) {
     return { name, ok: false, status: 0, ms: Date.now() - t0, error: e.name === 'AbortError' ? 'timeout' : e.message };
@@ -733,22 +734,40 @@ app.get('/api/status', async (req, res) => {
   if (_statusCache && Date.now() - _statusCache.t < STATUS_CACHE_TTL) {
     return res.json(_statusCache.v);
   }
+  // Env overrides per host scraper (mirror dei default in search.js).
+  const SOLID_HOST = process.env.SOLID_HOST || 'solidtorrents.eu';
+  const BITSEARCH_HOST = process.env.BITSEARCH_HOST || 'bitsearch.eu';
+  const APIBAY_HOST = process.env.APIBAY_HOST || 'apibay.org';
+
   const probes = await Promise.all([
+    // === Provider HTTP italiani (stream diretti) ===
     pingHost('AnimeWorld', 'https://www.animeworld.ac/'),
     pingHost('AnimeSaturn', 'https://www.animesaturn.cx/'),
-    pingHost('GuardaSerie', 'https://v.vidxgo.co/'),
+    pingHost('AnimeUnity', 'https://www.animeunity.so/'),
+    // GuardaSerie: la homepage v.vidxgo.co/ è sempre 403 (bloccata) ma
+    // l'endpoint /t/{imdb_num} (signed playlist) risponde 200 dagli IP non-bloccati
+    // SE VidXgo ha il file. Usiamo /t/1375666 (Inception, presente su VidXgo)
+    // come canary del vero funzionamento.
+    pingHost('GuardaSerie', 'https://v.vidxgo.co/t/1375666'),
     pingHost('StreamingCommunity', `${SC_UPSTREAM}/`),
+    // === Aggregator esterni (cache check Torbox/RD) ===
     pingHost('Torrentio', 'https://torrentio.strem.fun/manifest.json'),
     pingHost('MediaFusion', 'https://mediafusionfortheweebs.midnightignite.me/'),
     pingHost('Comet', 'https://comet.feels.legal/'),
     pingHost('StremThru', 'https://stremthru.13377001.xyz/'),
+    pingHost('Meteor', 'https://meteorfortheweebs.midnightignite.me/'),
+    // === Scraper torrent diretti (search.js) ===
+    pingHost('Knaben', 'https://api.knaben.org/v1'),
+    pingHost('apibay', `https://${APIBAY_HOST}/q.php?q=test`),
+    pingHost('Bitsearch', `https://${BITSEARCH_HOST}/`),
+    pingHost('Solid', `https://${SOLID_HOST}/`),
+    pingHost('Nyaa', 'https://nyaa.si/'),
+    pingHost('TokyoTosho', 'https://www.tokyotosho.info/'),
   ]);
-  // Override GuardaSerie: il pingHost considera 403 come "alive" (server
-  // risponde), ma per VidXgo specifico 403 = ip_range blocked sistemico —
-  // il provider è di fatto inutilizzabile. Mostra rosso se vidxgo.isDown()
-  // ha marcato cooldown (post-403 in findStream) o se la probe ha avuto 403.
+  // Override GuardaSerie: rispetta vidxgo.isDown() (cooldown post-403 in findStream).
+  // Il check /t/603 sopra è il primary indicator del funzionamento reale.
   const gs = probes.find((p) => p.name === 'GuardaSerie');
-  if (gs && (vidxgo.isDown() || gs.status === 403)) {
+  if (gs && vidxgo.isDown()) {
     gs.ok = false;
     gs.error = 'ip_range blocked upstream';
   }
