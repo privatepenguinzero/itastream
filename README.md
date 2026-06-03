@@ -16,13 +16,6 @@ Film, serie, anime — tutti in italiano, prima possibile.
 
 ---
 
-<div align="center">
-
-<img src="assets/hero.png" alt="ITASTREAM: lista stream italiana ordinata per lingua" width="100%">
-
-</div>
-
----
 
 ## 🎬 Cosa fa
 
