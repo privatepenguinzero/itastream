@@ -58,7 +58,7 @@ Tu apri il link, copi-incolli in Stremio, finito. Funziona uguale su PC, telefon
 ## ⚡ Provalo in 30 secondi
 
 ### 1. Apri il link
-### 👉 [**https://pezz8io.dpdns.org/configure**](https://pezz8io.dpdns.org/configure)
+### 👉 [**https://itastream.dpdns.org/configure**](https://itastream.dpdns.org/configure)
 
 ### 2. Metti la chiave Torbox
 
